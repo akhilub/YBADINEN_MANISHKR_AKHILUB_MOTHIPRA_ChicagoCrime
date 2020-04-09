@@ -1,76 +1,158 @@
-# Write a Brief Descriptive Title Here
+# City of Chicago crime data visualization
 
-Authors:  **Name 1** and **Name 2**
-
----
-
-**NOTE**:  The *italicized* content below is for your reference only.  Please remove these comments before submitting.
+Authors:  **Yeshwanth Badineni**, **Akhil Singh**, **Manish katiki**, and **Mothi Kopparla**
 
 ---
 
 ## Introduction
-*The purpose of this section is to provide some information about the data you're exploring.  For example, you should*
-- *Describe the type of data that you're importing.* 
-- *Describe the source of the data.  Include URLs.*  
-- *Explain how recent is this data?  How often is it updated?*
+- *The code that is being imported is of 'json'(Java Script Object Notation) format.* 
+- *Data is taken from [Chicago Data Portal](https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present-Dashboard/5cd6-ry5g).*  
+- *This dataset reflects reported incidents of crime that occurred in the City of Chicago from 2001 to present, minus the most recent seven days.*
 
 ---
 
 ## Sources
-*In this section, provide links to your references.  For example:*
-- The source code came from [the magic source code farm](http://www.amagicalnonexistentplace.com)
-- The code retrieves data from [the organization for hosting cool data](http://www.anothermagicalnonexistentplace.com)
+- The code retrieves data from [City of Chicago | Data Portal](https://data.cityofchicago.org/resource/ijzp-q8t2.json)
 
 ---
 
 ## Explanation of the Code
-*In this section you should provide a more detailed explanation of what, exactly, the above code actually does.  Your classmates should be able to read your explanation and understand what is happening in the code.*
 
-The code, `needs_a_good_name.py`, begins by importing necessary Python packages:
+The code, `API_Chicago_Crime.ipynb`, begins by importing necessary Python packages:
 ```
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+import folium
+import seaborn as sns
+from folium.plugins import MarkerCluster
 ```
 
-- *NOTE:  If a package does not come pre-installed with Anaconda, you'll need to provide instructions for installing that package here.*
+- *NOTE:  You may need to install folium.*
 
-We then import data from [insert name of data source].  We print the data to allow us to verify what we've imported:
+- You may do that by following the code below:
 ```
-x = [1, 3, 4, 7]
-y = [2, 5, 1, 6]
+pip install folium
 
-for i in range(0,len(x)):
-	print "x[%d] = %f" % (i, x[i])		
 ```
-- *NOTE 1:  This sample code doesn't actually import anything.  You'll need your code to grab live data from an online source.*  
-- *NOTE 2:  You will probably also need to clean/filter/re-structure the raw data.  Be sure to include that step.*
 
-Finally, we visualize the data.  We save our plot as a `.png` image:
+We then import data from the above mentioned source:
 ```
-plt.plot(x, y)
-plt.savefig('samplefigure.png')	
+url = 'https://data.cityofchicago.org/resource/ijzp-q8t2.json?$limit=100000&'
+df = pd.read_json(url)	
+df	
+```
+
+We then clean our data from some unwanted columns present in the data as follows:
+```
+drop = [':@computed_region_awaf_s7ux',':@computed_region_6mkv_f3dw',':@computed_region_vrxf_vc4k',':@computed_region_bdys_3d7i',':@computed_region_43wa_7qmu',':@computed_region_rpca_8um6',':@computed_region_d9mm_jgwp',':@computed_region_d3ds_rm58']
+df.drop(drop, inplace=True, axis=1)
+```
+
+we visualize the data, No.of crimes according to it's category:
+```
+plt.figure(figsize=(15,6))
+df['primary_type'].value_counts().plot.bar()
+plt.title("Crimes")
 plt.show()
 ```
 
 The output from this code is shown below:
 
-![Image of Plot](images/samplefigure.png)
+![Image of Plot](images/types_of_crime.png)
 
 ---
 
+we visualize the data, No.of crimes according to it's location:
+```
+plt.figure(figsize = (15, 10))
+sns.countplot(y= 'location_description', data = df, order = df['location_description'].value_counts().iloc[:10].index);
+```
+
+The output from this code is shown below:
+
+![Image of Plot](images/crime_location_count.png)
+
+---
+
+Plotting the communities in Chicago city :
+```
+for i in range(len(new_locations)):
+    lat = new_locations.iloc[i][0]
+    long = new_locations.iloc[i][1]
+    popup_text = """Community Index : {}<br>
+                Arrest : {}<br>
+                Location Description : {}<br>"""
+    popup_text = popup_text.format(new_locations.index[i],
+                               new_locations.iloc[i][-1],
+                               new_locations.iloc[i][-2]
+                               )
+    folium.CircleMarker(location = [lat, long], popup= popup_text, fill = True).add_to(chicago_map)
+```
+
+The output from this code is shown below:
+
+![Image of Plot](images/communities.png)
+
+---
+
+Visualizing the density of crimes in communities:
+```
+for i in range(500):
+    lat = CR_index['LocationCoord'].iloc[i][0]
+    long = CR_index['LocationCoord'].iloc[i][1]
+    radius = CR_index['ValueCount'].iloc[i] /5
+    
+    if CR_index['ValueCount'].iloc[i] >75:
+        color = "#FF4500"
+    else:
+        color = "#008080"
+    
+    popup_text = """Latitude : {}<br>Longitude : {}<br>Criminal Incidents : {}<br>"""
+    
+    popup_text = popup_text.format(lat,long,CR_index['ValueCount'].iloc[i])
+                               
+    folium.CircleMarker(location = [lat, long], popup= popup_text,radius = radius, color = color, fill = True)\
+    .add_to(chicago_map_crime)
+```
+
+The output from this code is shown below:
+
+![Image of Plot](images/crime_density.png)
+
+---
+
+Assaults commited with guns by location:
+```
+mc = MarkerCluster()
+for row in gun_Battery_df.itertuples():
+    mc.add_child(folium.Marker(location=[row.latitude,  row.longitude], popup= 'gun'))
+my_map1.add_child(mc)
+```
+
+The output from this code is shown below:
+
+![Image of Plot](images/gun_crimes.png)
+
 ## How to Run the Code
-*Provide step-by-step instructions for running the code.  For example, I like to run code from the terminal:*
-1. Open a terminal window.
 
-2. Change directories to where `needs_a_good_name.py` is saved.
+1. Launch Jupyter Notebook on Anaconda.
 
-3. Type the following command:
-	```
-	python needs_a_good_name.py
-	```
+2. Open and run `API_Chicago_Crime.ipynb` cell by cell.
 
-- *NOTE: You are welcome to provide instructions using Anaconda or IPython.*
+Note: Uncomment the `pip install folium `, if the package is not pre-installed on the system.
+
+3. You can interact with the maps to zoom in and zoom out.
+
 
 ---
 
 ## Suggestions
-*Finally, you should suggest any additional features that would be useful/interesting.  For example, what else could you do with these data?  How might you want to modify the plot to be more descriptive?  What summary statistics might you want to calculate with these data?*
+*We can further use predictive modeling to predict the crime at a recurring scene and can even suggest more patrolling at specific timings so as to curb crimes at a faster pace. Also studying common types of crimes commited in a location can allow police to take appropriate steps to mitigate them.*
+
+---
+
+## References
+
+- https://python-visualization.github.io/folium/quickstart.html.
+- https://towardsdatascience.com/data-visualization-with-python-folium-maps-a74231de9ef7
