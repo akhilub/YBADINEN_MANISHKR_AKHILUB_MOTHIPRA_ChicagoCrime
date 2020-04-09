@@ -1,6 +1,6 @@
 # City of Chicago crime data visualization
 
-Authors:  **Yeshwanth Badineni**, **Akhil Singh**, **Manish katiki**, and **Mothi Kopparla**
+Authors:  **Yeshwanth Badineni**, **Akhil Singh Chauhan**, **Manish katiki**, and **Mothi Kopparla**
 
 ---
 
